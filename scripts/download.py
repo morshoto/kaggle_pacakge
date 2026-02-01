@@ -1,7 +1,3 @@
-"""Download Kaggle competition data into data/raw."""
-
-from __future__ import annotations
-
 import argparse
 import os
 import sys
@@ -31,7 +27,9 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     if not args.competition:
-        print("ERROR: COMPETITION is not set. Use --competition or set COMPETITION env.")
+        print(
+            "ERROR: COMPETITION is not set. Use --competition or set COMPETITION env."
+        )
         return 2
 
     try:

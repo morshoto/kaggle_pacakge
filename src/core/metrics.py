@@ -1,7 +1,3 @@
-"""Evaluation metrics stubs."""
-
-from __future__ import annotations
-
 import numpy as np
 
 

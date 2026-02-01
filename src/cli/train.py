@@ -1,11 +1,7 @@
-"""Training entry point stub."""
-
-from __future__ import annotations
-
 import argparse
-from pathlib import Path
 
-from .config import PROCESSED_DIR, ensure_data_dirs
+from src.core.config import PROCESSED_DIR
+from src.pipelines.train import run_train
 
 
 def parse_args() -> argparse.Namespace:
@@ -20,11 +16,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    ensure_data_dirs()
-
-    output = Path(args.output)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text("placeholder model artifact\n")
+    output = run_train(output=args.output)
     print(f"Wrote model artifact to {output}")
     return 0
 

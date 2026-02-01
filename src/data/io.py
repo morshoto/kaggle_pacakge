@@ -1,11 +1,8 @@
-"""Data loading and preprocessing stubs."""
-
-from __future__ import annotations
-
 from pathlib import Path
+
 import pandas as pd
 
-from .config import RAW_DIR, PROCESSED_DIR
+from src.core.config import PROCESSED_DIR, RAW_DIR
 
 
 def load_raw(name: str) -> pd.DataFrame:

@@ -1,13 +1,7 @@
-"""Inference entry point stub."""
-
-from __future__ import annotations
-
 import argparse
-from pathlib import Path
 
-import pandas as pd
-
-from .config import PROCESSED_DIR, RAW_DIR, ensure_data_dirs
+from src.core.config import PROCESSED_DIR, RAW_DIR
+from src.pipelines.infer import run_infer
 
 
 def parse_args() -> argparse.Namespace:
@@ -27,18 +21,10 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    ensure_data_dirs()
-
-    sample_path = Path(args.sample_submission)
-    if not sample_path.exists():
-        raise FileNotFoundError(f"Missing sample submission: {sample_path}")
-
-    df = pd.read_csv(sample_path)
-
-    # Placeholder prediction: keep sample submission values as-is.
-    output = Path(args.output)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(output, index=False)
+    output = run_infer(
+        sample_submission=args.sample_submission,
+        output=args.output,
+    )
     print(f"Wrote predictions to {output}")
     return 0
 
