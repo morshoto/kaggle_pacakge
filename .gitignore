@@ -1,6 +1,11 @@
 # Custom ignore
 pnpm-lock.yaml
 node_modules/
+data/**
+!data/
+!data/**/
+!data/README.md
+!data/**/.gitkeep
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
