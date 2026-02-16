@@ -1,0 +1,34 @@
+name: Improvements
+description: Suggest improvements
+title: ""
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / motivation
+      description: What problem are you trying to solve?
+      placeholder: Describe the motivation behind this improvement.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe the change you want.
+      placeholder: What should change? 
+    validations:
+      required: true
+
+  - type: textarea
+    id: resources
+    attributes:
+      label: Proposed resources
+      description: Describe the resources you'd like to see added or improved.
+      placeholder: Provide links or details about the resources.
+    validations:
+      required: false
+  
+  

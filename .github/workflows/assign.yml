@@ -1,0 +1,53 @@
+name: Assign
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  issues:
+    types: [opened]
+
+jobs:
+  assign-label:
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Label based on branch name
+        if: ${{ github.event.action == 'opened' }}
+        uses: actions/labeler@v5
+        with:
+          configuration-path: .github/labels/labeling-branch.yaml
+      - name: Label based on file changes
+        uses: actions/labeler@v5
+        with:
+          configuration-path: .github/labels/labeling-files.yaml
+
+  sync-labels:
+    permissions:
+      issues: write
+      contents: read
+      pages: write
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install dependencies
+        run: yarn add -D @azu/github-label-setup
+      - name: Run github-label-setup
+        run: yarn github-label-setup --token ${{ secrets.GITHUB_TOKEN }} --labels .github/labels/labels.json
+
+  assign-author:
+    if: ${{ ! contains(fromJson('["renovate[bot]", "dependabot[bot]"]'), github.actor) }}
+    permissions:
+      issues: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: technote-space/assign-author@v1
