@@ -26,6 +26,14 @@ Develop machine learning models to predict. The goal is to improve understanding
 │   └── pipelines  <----Orchestration flows
 ```
 
+### CLI Usage 
+
+**cli/get_discussion**
+This command line tool let you gather kaggle discussion and let you create local markdown files. This levarages you to summarize discussions with other tools
+
+> [!NOTE]
+> Initialize `.env` file from `.env.example` file to read competition
+
 ### Dataset
 
 The dataset provided for this competition consists of.
