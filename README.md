@@ -6,7 +6,8 @@ Develop machine learning models to predict. The goal is to improve understanding
 
 ```bash
 ├── data           <---- Data directory
-├── docs           <---- Documents, logs,
+├── cli            <---- Command line tools
+├── docs           <---- Documents, logs
 │   ├── Log.md     <---- Day tracking work
 │   ├── Paper.md   <---- Paper research
 │   └── Scoring.md <---- Score tracking table
