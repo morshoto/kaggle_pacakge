@@ -7,11 +7,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/shotomorisaki/predicting_heart_disease/cli/get_discussion/internal/api"
-	"github.com/shotomorisaki/predicting_heart_disease/cli/get_discussion/internal/client"
-	"github.com/shotomorisaki/predicting_heart_disease/cli/get_discussion/internal/discussion"
-	"github.com/shotomorisaki/predicting_heart_disease/cli/get_discussion/internal/storage"
-	"github.com/shotomorisaki/predicting_heart_disease/cli/get_discussion/pkg/urlutil"
+	"github.com/shotomorisaki/kaggle_pacakge/cli/get_discussion/internal/api"
+	"github.com/shotomorisaki/kaggle_pacakge/cli/get_discussion/internal/client"
+	"github.com/shotomorisaki/kaggle_pacakge/cli/get_discussion/internal/discussion"
+	"github.com/shotomorisaki/kaggle_pacakge/cli/get_discussion/internal/storage"
+	"github.com/shotomorisaki/kaggle_pacakge/cli/get_discussion/pkg/urlutil"
 )
 
 func main() {
@@ -22,13 +22,17 @@ func main() {
 		outputDir  string
 		delay      float64
 		verbose    bool
+		limit      int
+		all        bool
 	)
 
 	flag.StringVar(&link, "link", "", "Download a single discussion by URL.")
-	flag.StringVar(&sort, "sort", "", "Sort option: hotness, recent_comments, recently_posted, most_votes, most_comments.")
+	flag.StringVar(&sort, "sort", "hotness", "Sort: hotness, recent_comments, recently_posted, most_votes, most_comments.")
 	flag.StringVar(&timeFilter, "time-filter", "", "Time filter: last_30_days, last_7_days, today.")
 	flag.StringVar(&outputDir, "output-dir", "discussion", "Output directory for Markdown files.")
 	flag.Float64Var(&delay, "delay", 0.5, "Delay in seconds between requests.")
+	flag.IntVar(&limit, "limit", 10, "Max discussions to download (default 10).")
+	flag.BoolVar(&all, "all", false, "Download all discussions (ignores --limit).")
 	flag.BoolVar(&verbose, "verbose", false, "Enable verbose logging.")
 	flag.Parse()
 
@@ -41,6 +45,11 @@ func main() {
 	if link != "" {
 		urls = []string{urlutil.CanonicalizeURL(link)}
 	} else {
+		effectiveLimit := limit
+		if all {
+			effectiveLimit = 0
+		}
+
 		sortKey := urlutil.NormalizeChoice(sort)
 		timeKey := urlutil.NormalizeChoice(timeFilter)
 
@@ -62,7 +71,7 @@ func main() {
 			if err != nil {
 				log.Printf("[warn] Competition API failed: %v", err)
 			} else {
-				urls, err = api.FetchTopicListByForumID(httpClient, forumID, sortKey, timeKey)
+				urls, err = api.FetchTopicListByForumID(httpClient, forumID, sortKey, timeKey, effectiveLimit)
 				if err != nil {
 					log.Printf("[warn] Topic list API failed: %v", err)
 					urls = nil
@@ -80,6 +89,9 @@ func main() {
 				log.Printf("[warn] Failed to fetch listing: %v", err)
 			} else {
 				urls = discussion.ExtractDiscussionLinksFromHTML(body, listingURL)
+				if effectiveLimit > 0 && len(urls) > effectiveLimit {
+					urls = urls[:effectiveLimit]
+				}
 			}
 
 			if len(urls) == 0 && competition != "" {
@@ -90,6 +102,9 @@ func main() {
 					log.Printf("[warn] Competition listing failed: %v", err)
 				} else {
 					urls = discussion.ExtractDiscussionLinksFromHTML(body, compURL)
+					if effectiveLimit > 0 && len(urls) > effectiveLimit {
+						urls = urls[:effectiveLimit]
+					}
 					if len(urls) == 0 {
 						log.Printf("[warn] No discussion links found on competition listing url=%s", compURL)
 					}

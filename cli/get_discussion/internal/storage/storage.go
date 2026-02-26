@@ -8,8 +8,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/shotomorisaki/predicting_heart_disease/cli/get_discussion/internal/discussion"
-	"github.com/shotomorisaki/predicting_heart_disease/cli/get_discussion/pkg/urlutil"
+	"github.com/shotomorisaki/kaggle_pacakge/cli/get_discussion/internal/discussion"
+	"github.com/shotomorisaki/kaggle_pacakge/cli/get_discussion/pkg/urlutil"
 )
 
 var slugRe = regexp.MustCompile(`[^a-z0-9_\-]+`)

@@ -11,7 +11,7 @@ This document describes how to set up the environment and download Kaggle compet
 
 ## 1) Configure Kaggle credentials
 
-This project uses **kagglehub** for downloading competition data (recommended).
+This project uses **kagglehub** for downloading competition data (recommended), with a fallback to the legacy Kaggle CLI.
 
 ### Create a Kaggle API token
 
@@ -24,13 +24,22 @@ This project uses **kagglehub** for downloading competition data (recommended).
 Create a `.env` file at the repository root (or copy from `.env.example` if present):
 
 ```bash
+# kagglehub token (recommended)
 KAGGLE_API_TOKEN="KGAT_..."
+
+# legacy Kaggle CLI credentials (optional fallback)
+KAGGLE_USERNAME="your_username"
+KAGGLE_KEY="your_key"
+
 COMPETITION="playground-series-s6e2"
 ```
 
 > Notes:
 >
+> Notes:
+>
 > - `KAGGLE_API_TOKEN` is required for kagglehub.
+> - `KAGGLE_USERNAME` and `KAGGLE_KEY` are only used if kagglehub fails and the legacy CLI is used.
 > - The competition slug is the part after `/competitions/` in the Kaggle URL.
 
 ## 2) Install dependencies

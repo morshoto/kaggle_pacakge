@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"predicting_heart_disease/scripts/get_discussion/internal/api"
-	"predicting_heart_disease/scripts/get_discussion/internal/client"
-	"predicting_heart_disease/scripts/get_discussion/pkg/urlutil"
+	"github.com/shotomorisaki/kaggle_pacakge/cli/get_discussion/internal/api"
+	"github.com/shotomorisaki/kaggle_pacakge/cli/get_discussion/internal/client"
+	"github.com/shotomorisaki/kaggle_pacakge/cli/get_discussion/pkg/urlutil"
 )
 
 // Discussion holds all metadata and content for a single Kaggle discussion.

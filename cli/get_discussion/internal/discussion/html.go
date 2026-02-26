@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"strings"
 
-	"predicting_heart_disease/scripts/get_discussion/internal/client"
-	"predicting_heart_disease/scripts/get_discussion/pkg/urlutil"
+	"github.com/shotomorisaki/kaggle_pacakge/cli/get_discussion/internal/client"
+	"github.com/shotomorisaki/kaggle_pacakge/cli/get_discussion/pkg/urlutil"
 )
 
 // ExtractDiscussionLinksFromHTML parses anchor hrefs from raw HTML bytes.

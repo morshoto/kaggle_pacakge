@@ -8,10 +8,16 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 )
 
 const userAgent = "Mozilla/5.0 (compatible; KaggleDiscussionDownloader/1.0)"
+const (
+	maxRetries    = 5
+	baseBackoff   = 1 * time.Second
+	maxBackoffCap = 10 * time.Second
+)
 
 // Client wraps an http.Client and its cookie jar together with helpers.
 type Client struct {
@@ -62,15 +68,29 @@ func (c *Client) PostJSON(rawURL string, body any) (*http.Response, error) {
 }
 
 func (c *Client) FetchBody(rawURL string, params url.Values) ([]byte, error) {
-	resp, err := c.Get(rawURL, params)
-	if err != nil {
-		return nil, err
+	var lastErr error
+	for attempt := 0; attempt <= maxRetries; attempt++ {
+		resp, err := c.Get(rawURL, params)
+		if err != nil {
+			lastErr = err
+			c.maybeSleep(nil, attempt)
+			continue
+		}
+		if shouldRetry(resp.StatusCode) {
+			lastErr = fmt.Errorf("HTTP %d for %s", resp.StatusCode, rawURL)
+			delay := c.maybeSleep(resp, attempt)
+			_ = resp.Body.Close()
+			if delay > 0 {
+				continue
+			}
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode >= 400 {
+			return nil, fmt.Errorf("HTTP %d for %s", resp.StatusCode, rawURL)
+		}
+		return io.ReadAll(resp.Body)
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("HTTP %d for %s", resp.StatusCode, rawURL)
-	}
-	return io.ReadAll(resp.Body)
+	return nil, lastErr
 }
 
 func (c *Client) FetchJSON(rawURL string, params url.Values, dest any) error {
@@ -82,21 +102,71 @@ func (c *Client) FetchJSON(rawURL string, params url.Values, dest any) error {
 }
 
 func (c *Client) PostJSONDecode(rawURL string, body any, dest any) error {
-	resp, err := c.PostJSON(rawURL, body)
-	if err != nil {
-		return err
+	var lastErr error
+	for attempt := 0; attempt <= maxRetries; attempt++ {
+		resp, err := c.PostJSON(rawURL, body)
+		if err != nil {
+			lastErr = err
+			c.maybeSleep(nil, attempt)
+			continue
+		}
+		if shouldRetry(resp.StatusCode) {
+			lastErr = fmt.Errorf("HTTP %d for %s", resp.StatusCode, rawURL)
+			delay := c.maybeSleep(resp, attempt)
+			_ = resp.Body.Close()
+			if delay > 0 {
+				continue
+			}
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode >= 400 {
+			return fmt.Errorf("HTTP %d for %s", resp.StatusCode, rawURL)
+		}
+		return json.NewDecoder(resp.Body).Decode(dest)
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode >= 400 {
-		return fmt.Errorf("HTTP %d for %s", resp.StatusCode, rawURL)
-	}
-	return json.NewDecoder(resp.Body).Decode(dest)
+	return lastErr
 }
 
 func (c *Client) LogInfo(format string, args ...any) {
 	if c.verbose {
 		log.Printf("[info] "+format, args...)
 	}
+}
+
+func shouldRetry(status int) bool {
+	return status == http.StatusTooManyRequests || status >= http.StatusInternalServerError
+}
+
+func (c *Client) maybeSleep(resp *http.Response, attempt int) time.Duration {
+	if attempt >= maxRetries {
+		return 0
+	}
+	delay := retryDelay(resp, attempt)
+	if delay > 0 {
+		c.LogInfo("rate limited, retrying in %s", delay)
+		time.Sleep(delay)
+	}
+	return delay
+}
+
+func retryDelay(resp *http.Response, attempt int) time.Duration {
+	if resp != nil {
+		if v := resp.Header.Get("Retry-After"); v != "" {
+			if secs, err := strconv.Atoi(v); err == nil && secs > 0 {
+				return time.Duration(secs) * time.Second
+			}
+			if t, err := http.ParseTime(v); err == nil {
+				if d := time.Until(t); d > 0 {
+					return d
+				}
+			}
+		}
+	}
+	backoff := baseBackoff << attempt
+	if backoff > maxBackoffCap {
+		return maxBackoffCap
+	}
+	return backoff
 }
 
 // simpleCookieJar is a minimal CookieJar that records cookies into a shared map.

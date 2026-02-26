@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/shotomorisaki/predicting_heart_disease/cli/get_discussion/internal/discussion"
+	"github.com/shotomorisaki/kaggle_pacakge/cli/get_discussion/internal/discussion"
 )
 
 func TestSlugifyTitle(t *testing.T) {

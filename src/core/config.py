@@ -17,3 +17,21 @@ def ensure_data_dirs() -> None:
     """Create standard data directories if they do not exist."""
     for path in [RAW_DIR, INTERIM_DIR, PROCESSED_DIR, SUBMISSIONS_DIR, EXTERNAL_DIR]:
         path.mkdir(parents=True, exist_ok=True)
+
+
+def is_kaggle() -> bool:
+    return Path("/kaggle/input").exists() or os.getenv("KAGGLE_URL_BASE") is not None
+
+
+def resolve_raw_dir() -> Path:
+    if os.getenv("RAW_DIR"):
+        return Path(os.getenv("RAW_DIR")).expanduser()
+
+    if is_kaggle() and COMPETITION:
+        return Path("/kaggle/input") / COMPETITION
+
+    data_dir = Path(os.getenv("DATA_DIR", ROOT_DIR / "data"))
+    return data_dir / "raw"
+
+
+RAW_DIR = resolve_raw_dir()

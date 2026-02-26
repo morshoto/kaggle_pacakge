@@ -1,4 +1,6 @@
 # Custom ignore
+catboost_info/
+discussion/
 pnpm-lock.yaml
 node_modules/
 data/**
